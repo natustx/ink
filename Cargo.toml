@@ -1,0 +1,52 @@
+[package]
+name = "ink-md"
+version = "0.1.0"
+edition = "2021"
+authors = ["Amin Borghei <borghei.mohammadamin@gmail.com>"]
+description = "The most advanced terminal markdown reader"
+license-file = "LICENSE"
+repository = "https://github.com/borghei/ink"
+keywords = ["markdown", "terminal", "reader", "tui", "cli"]
+categories = ["command-line-utilities", "text-processing"]
+
+[dependencies]
+# Markdown parsing (GFM-compliant)
+comrak = { version = "0.36", default-features = false, features = ["syntect"] }
+
+# TUI framework
+ratatui = { version = "0.30", features = ["crossterm"] }
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+# Syntax highlighting
+syntect = { version = "5.2", default-features = false, features = ["default-fancy"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Error handling
+anyhow = "1"
+
+# Theming & config
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+
+# URL fetching (rustls = no system OpenSSL dependency, cross-compiles cleanly)
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+
+# Open URLs in browser
+open = "5"
+
+# XDG directories
+dirs = "6"
+
+# Unicode width calculation
+unicode-width = "0.2"
+
+# Image decoding for inline image rendering
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

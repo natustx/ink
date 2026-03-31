@@ -1,0 +1,124 @@
+# ink — terminal markdown reader
+
+## Overview
+
+ink is a feature-rich terminal markdown reader built in Rust. It renders markdown with syntax highlighting, inline images, mermaid diagrams, and more inside an interactive TUI. It ships as a single binary with no runtime dependencies.
+
+## Features
+
+### Rendering
+- Full GFM (GitHub Flavored Markdown) support via the comrak parser
+- Headings (levels 1-6) with distinct visual styling and block prefixes
+- Bold, italic, strikethrough, inline code
+- Links with OSC 8 hyperlink support (Cmd+Click / Ctrl+Click in supported terminals)
+- Syntax-highlighted code blocks using syntect (supports all major programming languages)
+- Tables with auto-sized columns and word wrapping
+- Blockquotes with nested support and depth-based coloring
+- Ordered and unordered lists with nesting
+- Task lists with checkbox rendering
+- Footnotes
+- Horizontal rules
+- HTML blocks (rendered as-is)
+- YAML and TOML frontmatter stripping (optional display)
+
+### Images
+- Inline images rendered using Unicode half-block characters (▄) with 24-bit color
+- Works in any terminal with true color support
+- Loads images from local files (relative paths) and URLs (with 10s timeout)
+- Falls back to emoji placeholder (🖼) if image can't be loaded or decoded
+- Respects --no-images flag
+
+### Mermaid Diagrams
+- Renders mermaid code blocks as ASCII art
+- Supports flowcharts/graphs, sequence diagrams, pie charts, Gantt charts
+- Unknown diagram types get fallback rendering
+
+### Admonitions
+- GitHub-style admonition blocks: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
+- Each type has a distinct color and icon
+
+### Wikilinks
+- Converts [[target]] to [target](target.md)
+- Converts [[target|display text]] to [display text](target.md)
+- Preserves existing file extensions
+- Skips wikilinks inside code blocks and inline code
+
+### Interactive TUI
+- Built on ratatui with crossterm backend
+- Multi-tab: open multiple files, switch with Tab/Shift+Tab
+- In-document search with highlighted matches and match navigation
+- Table of contents sidebar showing heading structure, tracks scroll position
+- Navigation history with back/forward ([ ] keys or Alt+Arrow)
+- Follow relative markdown links with Enter
+- Mouse wheel scrolling
+- Responsive to terminal resizing
+
+### File Browser
+- Run `ink` with no args (TTY) or `ink .` or `ink <directory>`
+- Interactive list of all .md files found recursively
+- Filter with /, navigate with j/k/arrows, open with Enter
+- Skips hidden files and common non-doc directories (node_modules, target, etc.)
+- README files sorted first
+- Returns to browser after closing a file
+
+### Themes
+- 8 built-in themes: dark, light, dracula, catppuccin, nord, tokyo-night, gruvbox, solarized
+- Auto-detection of terminal background (dark/light)
+- Live theme preview with T key
+- 30+ customizable color properties per theme
+- Custom themes via TOML files in ~/.config/ink/themes/
+
+### Other Features
+- Presentation mode: split markdown on --- separators with --slides
+- Watch mode: auto-reload on file changes with --watch
+- Plain output mode: ANSI-colored output without TUI for piping with --plain
+- Document outline: `ink outline <file>` shows heading structure
+- Document stats: `ink stats <file>` shows word count, reading time, element counts
+- Markdown diff: `ink diff <file_a> <file_b>` compares two files
+- Shell integration: `ink shell-setup bash|zsh|fish` prints config snippets
+- URL fetching: open markdown from HTTP/HTTPS URLs directly
+- Stdin support: pipe markdown content to ink
+
+### Keybindings
+- j/k/↑/↓: scroll up/down
+- Space/PageDown: page down
+- PageUp: page up
+- G/End: jump to end
+- Home: jump to start
+- Ctrl+f/Ctrl+b: page down/up
+- Ctrl+d/Ctrl+u: half-page down/up
+- n/N: next/previous heading
+- /: search
+- t: toggle table of contents
+- T: theme picker
+- Enter: follow link
+- [/]: navigation back/forward
+- Tab/Shift+Tab: next/previous tab
+- q: quit
+
+## Configuration
+
+Config file: ~/.config/ink/config.toml
+
+```toml
+theme = "catppuccin"
+width = 90
+spacing = "normal"
+toc = false
+frontmatter = false
+```
+
+## Technical Stack
+- Language: Rust
+- Markdown parser: comrak (GFM-compliant)
+- TUI framework: ratatui + crossterm
+- Syntax highlighting: syntect
+- Image decoding: image crate
+- CLI: clap
+- License: Free to use, cannot be sold (see LICENSE)
+
+## Links
+- Repository: https://github.com/borghei/ink
+- Website: https://borghei.github.io/ink/
+- Author: Amin Borghei <borghei.mohammadamin@gmail.com>
+- Crates.io: https://crates.io/crates/ink

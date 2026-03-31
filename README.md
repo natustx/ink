@@ -1,0 +1,274 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/borghei/ink/main/docs/assets/demo.gif" alt="ink demo" width="720">
+</p>
+
+<h1 align="center">ink</h1>
+
+<p align="center">
+  A terminal markdown reader that actually looks good.
+</p>
+
+<p align="center">
+  <a href="https://github.com/borghei/ink/releases"><img src="https://img.shields.io/github/v/release/borghei/ink?style=flat-square" alt="Release"></a>
+  <a href="https://github.com/borghei/ink/blob/main/LICENSE"><img src="https://img.shields.io/github/license/borghei/ink?style=flat-square" alt="License"></a>
+  <a href="https://crates.io/crates/ink-md"><img src="https://img.shields.io/crates/v/ink-md?style=flat-square" alt="Crates.io"></a>
+</p>
+
+---
+
+ink renders markdown in your terminal with syntax highlighting, inline images, mermaid diagrams, themes, tabs, search, and a table of contents. One binary. No dependencies. Built in Rust.
+
+## Install
+
+### Quick install (macOS / Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/borghei/ink/main/install.sh | sh
+```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap borghei/tap
+brew install ink
+```
+
+### Cargo
+
+```bash
+cargo install ink-md
+```
+
+### Scoop (Windows)
+
+```powershell
+scoop bucket add borghei https://github.com/borghei/scoop-bucket
+scoop install ink
+```
+
+### Pre-built binaries
+
+Grab the latest binary for your platform from the [releases page](https://github.com/borghei/ink/releases). Available for Linux (amd64, arm64), macOS (amd64, arm64), and Windows (amd64).
+
+### From source
+
+```bash
+git clone https://github.com/borghei/ink.git
+cd ink
+cargo build --release
+# binary is at ./target/release/ink
+```
+
+## Quick start
+
+```bash
+# Read a file
+ink README.md
+
+# Browse all markdown files in a directory
+ink .
+
+# Read from a URL
+ink https://raw.githubusercontent.com/borghei/ink/main/README.md
+
+# Pipe from stdin
+cat notes.md | ink
+
+# Plain output (no TUI, pipe-friendly)
+ink --plain README.md
+```
+
+## Features
+
+### Renders markdown the way it should look
+
+Headings, bold, italic, strikethrough, links, blockquotes, lists, task lists, tables, footnotes, horizontal rules — all rendered with proper styling and colors.
+
+### Syntax-highlighted code blocks
+
+Language-aware highlighting for every major language. Code blocks get clean borders with the language label shown at the top.
+
+### Inline images
+
+Images in your markdown get rendered directly in the terminal using Unicode half-block characters. Works in any terminal with true color support. If an image can't load, ink shows a placeholder instead of crashing.
+
+### Mermaid diagrams
+
+Flowcharts, sequence diagrams, pie charts, and Gantt charts rendered as ASCII art. No external tools needed.
+
+### GitHub-style admonitions
+
+`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, and `[!CAUTION]` blocks render with distinct colors and icons.
+
+### Wikilinks
+
+`[[page]]` and `[[page|display text]]` syntax works out of the box. Great for browsing Obsidian vaults and personal wikis.
+
+### File browser
+
+Run `ink` with no arguments or point it at a directory. You'll get an interactive file picker that lists every `.md` file, with filtering and keyboard navigation.
+
+### Multi-tab support
+
+Open multiple files at once:
+
+```bash
+ink README.md CHANGELOG.md docs/guide.md
+```
+
+Switch between them with `Tab` and `Shift+Tab`.
+
+### Search
+
+Press `/` to search within a document. Matches highlight inline. Jump between results with arrow keys.
+
+### Table of contents
+
+Press `t` to toggle a sidebar showing every heading in the document. Tracks your position as you scroll.
+
+### 8 built-in themes
+
+Dark, Light, Dracula, Catppuccin, Nord, Tokyo Night, Gruvbox, and Solarized. Press `T` to open the theme picker and preview each one live.
+
+Auto-detects your terminal background and picks dark or light mode by default.
+
+### Presentation mode
+
+Split any markdown file into slides on `---` separators:
+
+```bash
+ink --slides deck.md
+```
+
+### Watch mode
+
+Auto-reload when the file changes on disk:
+
+```bash
+ink --watch draft.md
+```
+
+### Document stats and outline
+
+```bash
+# Heading structure
+ink outline README.md
+
+# Word count, reading time, element counts
+ink stats README.md
+
+# Diff two markdown files
+ink diff old.md new.md
+```
+
+## Keybindings
+
+| Key | Action |
+|---|---|
+| `j` / `k` / `↑` / `↓` | Scroll up/down |
+| `Space` / `Page Down` | Page down |
+| `Page Up` | Page up |
+| `G` / `End` | Jump to end |
+| `Home` | Jump to start |
+| `Ctrl+f` / `Ctrl+b` | Page down / up |
+| `Ctrl+d` / `Ctrl+u` | Half-page down / up |
+| `n` / `N` | Next / previous heading |
+| `/` | Search |
+| `t` | Toggle table of contents |
+| `T` | Theme picker |
+| `Enter` | Follow link |
+| `[` / `]` | Navigation back / forward |
+| `Tab` / `Shift+Tab` | Next / previous tab |
+| `q` | Quit |
+
+## Configuration
+
+Create `~/.config/ink/config.toml`:
+
+```toml
+# Default theme (dark, light, dracula, catppuccin, nord, tokyo-night, gruvbox, solarized)
+theme = "catppuccin"
+
+# Max rendering width in columns
+width = 90
+
+# Line spacing: compact, normal, relaxed
+spacing = "normal"
+
+# Show table of contents on startup
+toc = false
+
+# Show YAML/TOML frontmatter
+frontmatter = false
+```
+
+### Custom themes
+
+Drop a `.toml` file in `~/.config/ink/themes/` and use it by name:
+
+```bash
+ink --theme mytheme README.md
+```
+
+Every color is customizable — headings, code, links, blockquotes, admonitions, status bar, and more. Check any built-in theme in `src/theme/builtin.rs` for the full list of color keys.
+
+## Shell integration
+
+```bash
+ink shell-setup bash   # or zsh, fish
+```
+
+Prints config snippets you can add to your shell profile — aliases, fzf preview, git pager setup.
+
+## CLI reference
+
+```
+ink [OPTIONS] [FILE|URL]...
+
+Options:
+  -t, --theme <THEME>    Color theme [default: auto]
+  -w, --width <WIDTH>    Max width (columns, or: narrow, wide, full)
+  -s, --slides           Presentation mode
+  -p, --plain            Plain output (no TUI)
+      --watch            Watch file for changes
+      --toc              Show table of contents on startup
+      --no-images        Disable image rendering
+      --frontmatter      Show YAML/TOML frontmatter
+      --spacing <MODE>   Line spacing: compact, normal, relaxed
+
+Subcommands:
+  outline      Show document heading structure
+  stats        Show document statistics
+  diff         Diff two markdown files
+  shell-setup  Print shell integration snippets
+```
+
+## How it compares
+
+| Feature | ink | glow | mdcat | frogmouth |
+|---|---|---|---|---|
+| Interactive TUI | Yes | Yes | No | Yes |
+| Multi-tab | Yes | No | No | No |
+| In-document search | Yes | No | No | No |
+| Table of contents | Yes | No | No | Yes |
+| Inline images | Yes | No | Yes | No |
+| Mermaid diagrams | Yes | No | No | No |
+| Admonitions | Yes | No | No | No |
+| Wikilinks | Yes | No | No | No |
+| File browser | Yes | Yes | No | Yes |
+| Watch mode | Yes | No | No | No |
+| Presentation mode | Yes | No | No | No |
+| Themes | 8 | 2 | 0 | 0 |
+| Single binary | Yes | Yes | Yes | No |
+
+## Contributing
+
+Contributions are welcome. Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+Free to use, modify, and distribute. Cannot be sold — not the original, not forks, not derivatives. See [LICENSE](LICENSE) for the full text.
+
+## Author
+
+Made by [borghei](https://github.com/borghei) — who got tired of reading raw markdown like a caveman.
