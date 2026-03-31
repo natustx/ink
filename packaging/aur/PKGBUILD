@@ -1,0 +1,23 @@
+# Maintainer: Amin Borghei <borghei.mohammadamin@gmail.com>
+pkgname=ink-md
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="A terminal markdown reader that actually looks good"
+arch=('x86_64' 'aarch64')
+url="https://github.com/borghei/ink"
+license=('custom')
+depends=('gcc-libs')
+makedepends=('cargo')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/borghei/ink/archive/v$pkgver.tar.gz")
+sha256sums=('PLACEHOLDER')
+
+build() {
+  cd "ink-$pkgver"
+  cargo build --release --locked
+}
+
+package() {
+  cd "ink-$pkgver"
+  install -Dm755 "target/release/ink" "$pkgdir/usr/bin/ink"
+  install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

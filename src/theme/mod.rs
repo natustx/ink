@@ -1,0 +1,112 @@
+pub mod builtin;
+pub mod detect;
+
+use serde::Deserialize;
+
+#[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
+pub struct Theme {
+    pub name: String,
+    pub colors: ThemeColors,
+    #[serde(default)]
+    pub code_theme: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ThemeColors {
+    pub bg: Option<String>,
+    pub fg: String,
+    pub heading1: String,
+    pub heading2: String,
+    pub heading3: String,
+    pub heading4: String,
+    pub heading5: String,
+    pub heading6: String,
+    pub bold: String,
+    #[allow(dead_code)]
+    pub italic: String,
+    pub strikethrough: String,
+    pub code_fg: String,
+    pub code_bg: String,
+    pub code_block_bg: String,
+    pub link: String,
+    pub link_url: String,
+    pub blockquote_bar: String,
+    pub blockquote_text: String,
+    pub list_bullet: String,
+    pub list_number: String,
+    pub table_border: String,
+    pub table_header: String,
+    pub hr: String,
+    pub task_done: String,
+    pub task_pending: String,
+    pub search_match: String,
+    pub search_current: String,
+    pub status_bar_bg: String,
+    pub status_bar_fg: String,
+    pub toc_active: String,
+    pub toc_inactive: String,
+    pub admonition_note: String,
+    pub admonition_warning: String,
+    pub admonition_tip: String,
+    pub admonition_important: String,
+    pub admonition_caution: String,
+}
+
+/// Resolve a theme by name. Checks built-in themes first, then user config dir.
+pub fn resolve_theme(name: &str) -> Theme {
+    if name == "auto" {
+        let is_dark = detect::is_dark_background();
+        return if is_dark {
+            builtin::dark()
+        } else {
+            builtin::light()
+        };
+    }
+
+    match name {
+        "dark" => builtin::dark(),
+        "light" => builtin::light(),
+        "dracula" => builtin::dracula(),
+        "catppuccin" => builtin::catppuccin(),
+        "nord" => builtin::nord(),
+        "tokyo-night" => builtin::tokyo_night(),
+        "gruvbox" => builtin::gruvbox(),
+        "solarized" => builtin::solarized(),
+        _ => {
+            // Try loading from user config directory
+            if let Some(config_dir) = dirs::config_dir() {
+                let theme_path = config_dir
+                    .join("ink")
+                    .join("themes")
+                    .join(format!("{name}.toml"));
+                if theme_path.exists() {
+                    if let Ok(content) = std::fs::read_to_string(&theme_path) {
+                        if let Ok(theme) = toml::from_str(&content) {
+                            return theme;
+                        }
+                    }
+                }
+            }
+            // Fallback to dark
+            builtin::dark()
+        }
+    }
+}
+
+/// Parse a hex color string to RGB. Returns (200,200,200) for invalid input.
+pub fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() < 6 {
+        return (200, 200, 200);
+    }
+    let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(200);
+    let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(200);
+    let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(200);
+    (r, g, b)
+}
+
+pub fn hex_to_color(hex: &str) -> ratatui::style::Color {
+    let (r, g, b) = hex_to_rgb(hex);
+    ratatui::style::Color::Rgb(r, g, b)
+}
