@@ -6,6 +6,14 @@ use crate::theme;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FooterStatus {
+    None,
+    Watching,
+    Reloaded,
+    Failed(String),
+}
+
 /// Convert our StyledLine list into ratatui Lines for display.
 pub fn styled_lines_to_ratatui(lines: &[StyledLine], theme_name: &str) -> Vec<Line<'static>> {
     let t = theme::resolve_theme(theme_name);
@@ -97,11 +105,13 @@ pub fn render_bottom_bar(
     reading_time: usize,
     multi_tab: bool,
     tab_info: Option<(usize, usize)>,
+    status: &FooterStatus,
 ) {
     let t = theme::resolve_theme(theme_name);
     let bg = theme::hex_to_color(&t.colors.status_bar_bg);
     let fg = theme::hex_to_color(&t.colors.status_bar_fg);
     let dim_fg = theme::hex_to_color(&t.colors.link_url);
+    let warning_fg = theme::hex_to_color(&t.colors.admonition_warning);
 
     let mut keys: Vec<(&str, &str)> = vec![
         ("↑↓/jk", "scroll"),
@@ -130,7 +140,6 @@ pub fn render_bottom_bar(
         }
     }
 
-    // Right side: filename + stats
     let short_name = std::path::Path::new(filename)
         .file_name()
         .and_then(|n| n.to_str())
@@ -143,9 +152,49 @@ pub fn render_bottom_bar(
     };
 
     let right_name = format!("{short_name}{tab_part}");
-    let right_stats = format!("  {word_count} words · ~{reading_time} min  ");
+    let right_stats = format!("  {word_count} words · ~{reading_time} min");
+    let compact_status = area.width < 60;
+    let (status_text, status_style) = match status {
+        FooterStatus::None => (String::new(), Style::default().fg(fg).bg(bg)),
+        FooterStatus::Watching => (
+            if compact_status {
+                "●"
+            } else {
+                "● watching"
+            }
+            .to_string(),
+            Style::default().fg(dim_fg).bg(bg),
+        ),
+        FooterStatus::Reloaded => (
+            if compact_status {
+                "↻"
+            } else {
+                "↻ reloaded"
+            }
+            .to_string(),
+            Style::default().fg(fg).bg(bg).add_modifier(Modifier::BOLD),
+        ),
+        FooterStatus::Failed(detail) => (
+            if compact_status {
+                "⚠".to_string()
+            } else {
+                format!("⚠ {detail}")
+            },
+            Style::default()
+                .fg(warning_fg)
+                .bg(bg)
+                .add_modifier(Modifier::BOLD),
+        ),
+    };
+
+    let status_width = unicode_width::UnicodeWidthStr::width(status_text.as_str());
     let right_total_len = unicode_width::UnicodeWidthStr::width(right_name.as_str())
-        + unicode_width::UnicodeWidthStr::width(right_stats.as_str());
+        + unicode_width::UnicodeWidthStr::width(right_stats.as_str())
+        + if status_text.is_empty() {
+            2
+        } else {
+            2 + status_width + 2
+        };
 
     let left_len: usize = spans
         .iter()
@@ -164,6 +213,11 @@ pub fn render_bottom_bar(
         right_stats,
         Style::default().fg(dim_fg).bg(bg),
     ));
+    spans.push(Span::styled("  ", bar_style));
+    if !status_text.is_empty() {
+        spans.push(Span::styled(status_text, status_style));
+        spans.push(Span::styled("  ", bar_style));
+    }
 
     frame.render_widget(Paragraph::new(vec![Line::from(spans)]), area);
 }

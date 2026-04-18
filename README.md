@@ -142,11 +142,18 @@ ink --slides deck.md
 
 ### Watch mode
 
-Auto-reload when the file changes on disk:
+Auto-reload local files when they change on disk:
 
 ```bash
 ink --watch draft.md
 ```
+
+`ink` polls watched files on the existing UI tick, preserves your scroll position across reloads, and shows a footer status while watching (`● watching`, `↻ reloaded`, or `⚠ ...` on reload failure).
+
+Current v1 limits:
+- Local files only
+- No watch support for `--plain`, stdin, or URL input
+- Watches the opened file itself, not linked assets or included files
 
 ### Document stats and outline
 

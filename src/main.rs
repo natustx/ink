@@ -10,6 +10,7 @@ mod search;
 mod stats;
 mod theme;
 mod toc;
+mod watch;
 mod wikilink;
 
 use anyhow::Result;
@@ -212,6 +213,7 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
+    emit_watch_warnings(&args);
     let source = read_input(&args)?;
 
     if args.plain {
@@ -239,6 +241,36 @@ fn resolve_width(width_str: &Option<String>, config: &Option<config::Config>) ->
         }
     }
     config.as_ref().and_then(|c| c.width)
+}
+
+fn watch_warnings(args: &Args, stdin_is_tty: bool) -> Vec<&'static str> {
+    if !args.watch {
+        return Vec::new();
+    }
+
+    let mut warnings = Vec::new();
+
+    if args.plain {
+        warnings.push("ink: --watch has no effect in --plain mode");
+    }
+
+    if args.inputs.is_empty() && !stdin_is_tty {
+        warnings.push("ink: --watch has no effect for stdin input");
+    }
+
+    if let Some(input) = args.inputs.first() {
+        if input.starts_with("http://") || input.starts_with("https://") {
+            warnings.push("ink: --watch is not yet supported for URL input");
+        }
+    }
+
+    warnings
+}
+
+fn emit_watch_warnings(args: &Args) {
+    for warning in watch_warnings(args, std::io::stdin().is_terminal()) {
+        eprintln!("{warning}");
+    }
 }
 
 fn print_shell_setup(shell: &str) {
@@ -297,5 +329,42 @@ fn read_input(args: &Args) -> Result<String> {
     } else {
         let path = PathBuf::from(input);
         Ok(std::fs::read_to_string(&path)?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args() -> Args {
+        Args {
+            inputs: vec![],
+            theme: "dark".to_string(),
+            width: None,
+            slides: false,
+            plain: false,
+            watch: true,
+            toc: false,
+            no_images: true,
+            frontmatter: false,
+            spacing: Spacing::Normal,
+        }
+    }
+
+    #[test]
+    fn watch_plain_emits_warning() {
+        let mut args = args();
+        args.plain = true;
+
+        assert!(watch_warnings(&args, true).contains(&"ink: --watch has no effect in --plain mode"));
+    }
+
+    #[test]
+    fn watch_stdin_emits_warning() {
+        let args = args();
+
+        assert!(
+            watch_warnings(&args, false).contains(&"ink: --watch has no effect for stdin input")
+        );
     }
 }
